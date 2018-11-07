@@ -285,7 +285,7 @@
     {
       "networkSourceId":6,
       "globalId":"{5F396092-90DD-4E07-8C7D-2FB8480771C1}",
-      "assetGroupName":"Transformer",
+      "AssetGroupName":"Transformer",
       "terminalId":5,
       "geometry":{"x":6815946.0382617265,"y":1843672.782419219613,"z":0,"m":null}
     }
