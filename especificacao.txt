@@ -1,14 +1,14 @@
 - Trabalho com foco em redes de utilidades.
 - Uma rede de utilidades é subdividida em zonas ou circuitos
 - Cada zona/circuito tem uma quantidade de vertices chamados controladores
-pela qual o recurso flui.
+  pela qual o recurso flui.
 - Zona/circuito é baseado a partir de sua fonte (energia, agua, gas)
 - Os recursos fluem dos controladores para o resto da zona/circuito
 - Zonas podem ser tambem baseadas em sua elevacao, como redes abastecidas pela
-força da gravidade, no qual os recursos fluem em direção aos controladores
+  força da gravidade, no qual os recursos fluem em direção aos controladores
 - O objetivo principal desse projeto eh montar uma rede topologica e acrescentar a
-direção em uma rede de recursos, de modo que caracteristicas relevantes sejam identificadas
+  direção em uma rede de recursos, de modo que caracteristicas relevantes sejam identificadas
 - "Starting point" é usado para denotar o local onde a analise começa, ou seja, a caracteristica
-que queremos identtificar
+  que queremos identificar
 - Uma caracteristica ("feature") é "upstream" se esta em um caminho que nao contem vertices repetidos
-entre o ponto de inicio e o controlador.
+  entre o ponto de inicio e o controlador.
