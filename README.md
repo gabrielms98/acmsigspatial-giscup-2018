@@ -16,7 +16,7 @@ $ sudo apt-get install libjsoncpp-dev
 ### Como rodar a aplicação
 
 
-Para rodar a aplicação no modo de desenvolvimento, execute o comando:
+Para rodar a aplicaçã, execute o comando:
 ```console
 $ g++ *.cpp -ljsoncpp
 ```
