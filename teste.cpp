@@ -11,5 +11,8 @@ int main(){
   Json::Value obj;
   reader.parse(ifs, obj); // reader can also read strings
   cout << "Type: " << obj["type"].asString() << endl;
-
+  cout << "Source: " << obj["sourceMapping"]["1"].asString() << endl;
+  for(Json::Value w: obj["rows"]){
+    cout << w["viaNetworkSourceId"].asString() << endl;
+  }
 }
