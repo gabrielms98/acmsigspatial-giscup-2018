@@ -63,8 +63,16 @@ Edge::Edge(const Edge &e){
 }
 
 //======== FUNCOES SOURCE MAPPING ========
-void sourceMapping::setMapping(const int i, const string st){
-  this->src[i] = st;
+sourceMapping::sourceMapping(const sourceMapping &s){
+  this->dict = map<int, string>(s.dict);
+}
+
+void sourceMapping::setDict(const int i, const string st){
+  this->dict[i] = st;
 }
 
 //======== FUNCOES GRAPH ========
+Graph::Graph(const Graph &g){
+  this->type = g.type;
+  this->src = sourceMapping(g.src);
+}

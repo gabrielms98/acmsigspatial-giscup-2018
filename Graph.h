@@ -39,7 +39,7 @@ public:
   int sizePath() const{return path.size();}
   bool getHasZ() const{return hasZ;}
   bool getHasM() const{return hasM;}
-  vector<Path> getPathCopy() const{return vector<Path>(path);}
+  vector<Path> getPathCopy() const{return path;}
 
 private:
   bool hasZ;
@@ -60,7 +60,7 @@ public:
   string getGlobalId()const {return GlobalId;}
   string getAssetGroupName()const {return AssetGroupName;}
   int getTerminalId()const {return TerminalId;}
-  Geometry getGeometryCopy()const {return Geometry(Geometry_);}
+  Geometry getGeometryCopy()const {return Geometry_;}
 
 private:
   int NetworkSourceId;
@@ -83,9 +83,9 @@ public:
   int getNetworkSourceId()const { return NetworkSourceId;}
   string getGlobalId()const { return GlobalId;}
   string getAssetGroupName()const { return AssetGroupName;}
-  Geometry getGeometryCopy()const { return Geometry(Geometry_);}
-  Vertice getUCopy()const {return Vertice(u);}
-  Vertice getVCopy()const {return Vertice(v);}
+  Geometry getGeometryCopy()const { return Geometry_;}
+  Vertice getUCopy()const {return u;}
+  Vertice getVCopy()const {return v;}
 
 private:
   int NetworkSourceId;
@@ -98,9 +98,12 @@ private:
 
 struct sourceMapping{
   sourceMapping(){}
-  void setMapping(const int, const string);
-  private:
-  map<int, string> src;
+  sourceMapping(const sourceMapping &s);
+  void setDict(const int, const string);
+  int dictSize()const{return dict.size();}
+
+private:
+  map<int, string> dict;
 };
 
 class Graph{
@@ -109,11 +112,18 @@ public:
   friend Edge;
   friend sourceMapping;
 
+  Graph():type(" "), src(), controllers(0), adj(0) {}
+  Graph(const Graph &g);
+  Graph(const string tp, const sourceMapping &src_, const vector<Vertice> &ctrl, const vector<list<Vertice> > &adj_):
+    type(tp), src(src_), controllers(ctrl), adj(adj_) {}
+
+  string getType()const{return type;}
+  sourceMapping getSrcCopy()const{return src;}
+
 private:
   string type;
   sourceMapping src;
-
-  vector<Vertice> *controllers;
+  vector<Vertice> controllers;
   vector<list<Vertice> > adj;
 };
 
