@@ -2,129 +2,37 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <map>
+#include <set>
 #include <list>
-#include <jsoncpp/json/json.h>
+#include <sstream>
+#include <cstdlib>
+using namespace std;
+
+/*
+"This code is from "Algorithms in C++, Third Edition,"
+                by Robert Sedgewick, Addison-Wesley, 2002."
+*/
 
 #ifndef GRAPH_H
 #define GRAPH_H
 
-using namespace std;
-
-class Path{
-public:
-  Path() : x(0), y(0), z(0), m(0) {}
-  Path(const Path&);
-  Path(const double, const double, const double, const double);
-
-  double getX() const {return x;}
-  double getY() const {return y;}
-  double getZ() const {return z;}
-  double getM() const {return m;}
-
-private:
-  double x;
-  double y;
-  double z;
-  double m;
-};
-
-class Geometry{
-  friend Path;
-public:
-  Geometry() : hasM(false), hasZ(false), path(0) {}
-  Geometry(const Geometry&);
-  Geometry(const bool m_, const bool z_, const vector<Path>&path_):
-    hasM(m_), hasZ(z_), path(path_){}
-
-  int sizePath() const{return path.size();}
-  bool getHasZ() const{return hasZ;}
-  bool getHasM() const{return hasM;}
-  vector<Path> getPathCopy() const{return path;}
-
-private:
-  bool hasZ;
-  bool hasM;
-  vector<Path> path;
-};
-
-class Vertice{
-  friend Geometry;
-
-public:
-  Vertice();
-  Vertice(const int nt, const string g, const string asst, const int t, const Geometry &geo) :
-    NetworkSourceId(nt), GlobalId(g), AssetGroupName(asst), TerminalId(t), Geometry_(geo) {}
-  Vertice(const Vertice&);
-
-  int getNetworkSourceId()const {return NetworkSourceId;}
-  string getGlobalId()const {return GlobalId;}
-  string getAssetGroupName()const {return AssetGroupName;}
-  int getTerminalId()const {return TerminalId;}
-  Geometry getGeometryCopy()const {return Geometry_;}
-
-private:
-  int NetworkSourceId;
-  string GlobalId; //nome do vertice u
-  string AssetGroupName;
-  int TerminalId;
-  Geometry Geometry_;
-};
-
-class Edge{
-  friend Geometry;
-  friend Vertice;
-
-public:
-  Edge();
-  Edge(const Edge&);
-  Edge(const int nt, const string g, const string asst, const Geometry &geo, const Vertice &u_, const Vertice &v_) :
-    NetworkSourceId(nt), GlobalId(g), AssetGroupName(asst), Geometry_(geo), u(u_), v(v_) {}
-
-  int getNetworkSourceId()const { return NetworkSourceId;}
-  string getGlobalId()const { return GlobalId;}
-  string getAssetGroupName()const { return AssetGroupName;}
-  Geometry getGeometryCopy()const { return Geometry_;}
-  Vertice getUCopy()const {return u;}
-  Vertice getVCopy()const {return v;}
-
-private:
-  int NetworkSourceId;
-  string GlobalId;
-  string AssetGroupName;
-  Geometry Geometry_;
-  Vertice u;
-  Vertice v;
-};
-
-struct sourceMapping{
-  sourceMapping(){}
-  sourceMapping(const sourceMapping &s);
-  void setDict(const int, const string);
-  int dictSize()const{return dict.size();}
-
-private:
-  map<int, string> dict;
-};
-
 class Graph{
 public:
-  friend Vertice;
-  friend Edge;
-  friend sourceMapping;
+  int Vcnt, Ecnt;// bool digraph;
+  /*set<int> control;
+  set<int> start;
+  vector<bool> sol;*/
+  vector <list <int> > adj;
+  Graph(int V);
+  //Graph(const string &file);
+  int V() const;
+  int E() const;
 
-  Graph():type(" "), src(), controllers(0), adj(0) {}
-  Graph(const Graph &g);
-  Graph(const string tp, const sourceMapping &src_, const vector<Vertice> &ctrl, const vector<list<Vertice> > &adj_):
-    type(tp), src(src_), controllers(ctrl), adj(adj_) {}
-
-  string getType()const{return type;}
-  sourceMapping getSrcCopy()const{return src;}
-
-private:
-  string type;
-  sourceMapping src;
-  vector<Vertice> controllers;
-  vector<list<Vertice> > adj;
+  void insert(int, int);
+  void remove(int, int);
+  bool edge(int, int) const;
+  void save(const string &file, vector<bool>start, vector<bool>control, vector<bool>sol) const;
 };
 
 #endif
