@@ -6,6 +6,8 @@
 #include "Graph.h"
 using namespace std;
 
+//RICSON EH VIADO
+
 Graph::Graph(int V) :
   adj(V), Vcnt(V), Ecnt(0){
   adj.resize(V);
