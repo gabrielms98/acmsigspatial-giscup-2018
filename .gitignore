@@ -1,2 +1,5 @@
 *.o
-SampleDataset1
+SampleDataset1/*
+*.png
+*.out
+*.dot
