@@ -3,9 +3,11 @@
 #include <fstream>
 #include <jsoncpp/json/json.h>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/biconnected_components.hpp>
 
 using namespace std;
 typedef boost::adjacency_list<boost::listS,boost::vecS,boost::undirectedS> Graph;
+typedef boost::graph_traits<Graph>::vertex_descriptor vertex;
 
 int main(){
   map<string, int>dict;
@@ -51,6 +53,9 @@ int main(){
     start[dict[st]] = true;
     if(startingpoints.eof())break;
   }
- cout << k << '\n';
+
+  vector<vertex> art_points;
+  boost::articulation_points(g, back_inserter(art_points));
+  cerr << "Found " << art_points.size() << " articulation points.\n";
 
  }
