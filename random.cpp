@@ -43,9 +43,10 @@ void geraDot(const Graph &g, const string &file, const set<int> &startSet, const
 		f << "graph G{ " << '\n';
 		for(int i=0;i<V;i++){
 			f << i;
-      if(artiSet.find(i)!=artiSet.end()) f << "[color=\".7 .3 1.0\"]" << "[style=filled]";
-      if(startSet.find(i)!=startSet.end()) f << "[shape=triangle]";
-      else if(controlSet.find(i)!=controlSet.end()) f << "[shape=box]";
+			//if(solutSet.find(i)!=solutSet.end()) f << "[color=\".7 .3 1.0\"]" << "[style=filled]";//os vertices da solucao serao coloridos
+      if(artiSet.find(i)!=artiSet.end()) f << "[label = \"" << i <<"*\"]";//as articulacoes terao asterisco
+      if(startSet.find(i)!=startSet.end()) f << "[shape=triangle]";//starting points terao forma de triangulo
+      else if(controlSet.find(i)!=controlSet.end()) f << "[shape=box]";//controllers terao forma de quadrilatero
       f << ";" << '\n';
     }
     pair<edge_iterator, edge_iterator> ei;

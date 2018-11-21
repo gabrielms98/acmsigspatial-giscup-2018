@@ -17,9 +17,10 @@ void geraDot(const Graph &g, const string &file, const set<int> &startSet, const
 		f << "graph G{ " << '\n';
 		for(int i=0;i<V;i++){
 			f << i;
-      if(artiSet.find(i)!=artiSet.end()) f << "[color=\".7 .3 1.0\"]" << "[style=filled]";
-      if(startSet.find(i)!=startSet.end()) f << "[shape=triangle]";
-      else if(controlSet.find(i)!=controlSet.end()) f << "[shape=box]";
+			//if(solutSet.find(i)!=solutSet.end()) f << "[color=\".7 .3 1.0\"]" << "[style=filled]";//os vertices da solucao serao coloridos
+      if(artiSet.find(i)!=artiSet.end()) f << "[label = \"" << i <<"*\"]";//as articulacoes terao asterisco
+      if(startSet.find(i)!=startSet.end()) f << "[shape=triangle]";//starting points terao forma de triangulo
+      else if(controlSet.find(i)!=controlSet.end()) f << "[shape=box]";//controllers terao forma de quadrilatero
       f << ";" << '\n';
     }
     pair<edge_iterator, edge_iterator> ei;
@@ -33,7 +34,7 @@ void leGrafo(Graph &g, const string &js, const string &txt, set<int> &startSet, 
 	ifstream ifs(js);
   Json::Reader reader;
   Json::Value obj;
-  reader.parse(ifs, obj); // reader can also read strings
+  reader.parse(ifs, obj);
 
   //V sera o indice de cada vertice no grafo, e no fim representara a quantidade total de vertices
   for(Json::Value val : obj["rows"]){//para cada vertice do json
@@ -71,7 +72,7 @@ void leGrafo(Graph &g, const string &js, const string &txt, set<int> &startSet, 
   }
 }
 
-void addAux(Graph &g, const set<int> &startSet, const set<int> &controlSet){
+void addAux(Graph &g, const set<int> &startSet, const set<int> &controlSet){//adiciona as arestas auxiliares, que ligam os starting points aos controllers
 
 	set<int>::iterator it1, it2;
 	for(it1=startSet.begin(); it1!=startSet.end(); it1++)
