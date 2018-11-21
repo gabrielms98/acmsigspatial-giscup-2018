@@ -12,7 +12,7 @@ typedef boost::adjacency_list<boost::listS,boost::vecS,boost::undirectedS> Graph
 typedef boost::graph_traits<Graph>::vertex_descriptor vertex;
 typedef boost::graph_traits<Graph>::edge_iterator edge_iterator;
 
-void saveG(const Graph &g, const string &file, const set<int> &startSet, const set<int>&controlSet, const set<int>&artiSet, int V){
+void geraDot(const Graph &g, const string &file, const set<int> &startSet, const set<int>&controlSet, const set<int>&artiSet, int V){
 	  ofstream f(file.c_str(),ios::out);
 		f << "graph G{ " << '\n';
 		for(int i=0;i<V;i++){
@@ -72,6 +72,7 @@ void leGrafo(Graph &g, const string &js, const string &txt, set<int> &startSet, 
 }
 
 void addAux(Graph &g, const set<int> &startSet, const set<int> &controlSet){
+
 	set<int>::iterator it1, it2;
 	for(it1=startSet.begin(); it1!=startSet.end(); it1++)
 		for(it2=controlSet.begin(); it2!=controlSet.end(); it2++)
@@ -86,8 +87,8 @@ int main(int argc, char **argv){
 	set<int>startSet;//set que indica quais vertices sao starting points
 	leGrafo(g,argv[1],argv[2],startSet,controlSet,dict,V);
 	//addAux(g,startSet,controlSet);
-  vector<vertex> artVec;
+  vector<vertex> artiVec;
   set<int> artiSet;
-  boost::articulation_points(g, back_inserter(artVec)); for(int i=0; i<artVec.size(); i++) artiSet.insert((int)artVec[i]);
-  saveG(g,"sampleDataset1.dot",startSet,controlSet,artiSet,V);
+  boost::articulation_points(g, back_inserter(artiVec)); for(int i=0; i<artiVec.size(); i++) artiSet.insert((int)artiVec[i]);
+  geraDot(g,"sampleDataset1.dot",startSet,controlSet,artiSet,V);
  }
