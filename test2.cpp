@@ -1,13 +1,34 @@
 #include <iostream>
 #include <map>
 #include <fstream>
+#include <algorithm>
 #include <jsoncpp/json/json.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/biconnected_components.hpp>
+#include "boost/graph/graph_traits.hpp"
 
 using namespace std;
 typedef boost::adjacency_list<boost::listS,boost::vecS,boost::undirectedS> Graph;
 typedef boost::graph_traits<Graph>::vertex_descriptor vertex;
+typedef boost::graph_traits<Graph>::edge_iterator edge_iterator;
+
+void saveG(const Graph &g, const string &file, vector<bool> &start, vector<bool>&control, vector<bool>&art){
+	  ofstream f(file.c_str(),ios::out);
+		f << "graph G{ " << '\n';
+		for(int i=0;i<start.size();i++){
+			f << i;
+      if(art[i]) f << "[color=\".7 .3 1.0\"]" << "[style=filled]";
+      if(start[i]) f << "[shape=triangle]";
+      else if(control[i]) f << "[shape=box]";
+      f << ";" << '\n';
+    }
+    //pair<edge_iterator, edge_iterator> ei = boost::edges(g);
+    pair<edge_iterator, edge_iterator> ei;
+    for(ei = boost::edges(g); ei.first != ei.second; ++ei.first)
+		  f << source(*ei.first, g) << " -- " << target(*ei.first, g) << ";\n";
+	f << "}" <<endl;
+	f.close();
+}
 
 int main(){
   map<string, int>dict;
@@ -54,8 +75,9 @@ int main(){
     if(startingpoints.eof())break;
   }
 
-  vector<vertex> art_points;
-  boost::articulation_points(g, back_inserter(art_points));
-  cerr << "Found " << art_points.size() << " articulation points.\n";
-
+  vector<vertex> art_pointsAUX;
+  vector<bool> art_points(k, false);
+  boost::articulation_points(g, back_inserter(art_pointsAUX));
+  for(int i=0; i<art_pointsAUX.size(); i++) art_points[(int)art_pointsAUX[i]]=true;
+  saveG(g,"vaidamerda.dot",start,control,art_points);
  }
