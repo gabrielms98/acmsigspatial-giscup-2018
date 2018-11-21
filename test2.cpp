@@ -72,7 +72,6 @@ void leGrafo(Graph &g, const string &js, const string &txt, set<int> &startSet, 
 }
 
 void addAux(Graph &g, const set<int> &startSet, const set<int> &controlSet){
-
 	set<int>::iterator it1, it2;
 	for(it1=startSet.begin(); it1!=startSet.end(); it1++)
 		for(it2=controlSet.begin(); it2!=controlSet.end(); it2++)
@@ -85,7 +84,7 @@ int main(int argc, char **argv){
 	int V=0;//representara o indice de cada vertice, e no final representara o numero total de vertices
 	set<int>controlSet;//set que indica quais vertices sao controladores
 	set<int>startSet;//set que indica quais vertices sao starting points
-	leGrafo(g,argv[1],argv[2],controlSet,startSet,dict,V);
+	leGrafo(g,argv[1],argv[2],startSet,controlSet,dict,V);
 	//addAux(g,startSet,controlSet);
   vector<vertex> artVec;
   set<int> artiSet;
