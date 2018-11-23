@@ -8,9 +8,18 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/biconnected_components.hpp>
 #include "boost/graph/graph_traits.hpp"
+#include <omp.h>
 
 using namespace std;
-typedef boost::adjacency_list<boost::listS,boost::vecS,boost::undirectedS> Graph;
+
+struct edge_component_t{
+  enum
+  { num = 555 };
+  typedef boost::edge_property_tag kind;
+}
+edge_component;
+
+typedef boost::adjacency_list<boost::listS,boost::vecS,boost::undirectedS,boost::no_property, boost::property <edge_component_t, std::size_t > > Graph;
 typedef boost::graph_traits<Graph>::vertex_descriptor vertex;
 typedef boost::graph_traits<Graph>::edge_iterator edge_iterator;
 
@@ -38,20 +47,22 @@ void geraGrafo(Graph &g, int v, int e, int s, int c, set<int> &startSet, set<int
 	}
 }
 
-void geraDot(const Graph &g, const string &file, const set<int> &startSet, const set<int>&controlSet, const set<int>&artiSet, int V){
+void geraDot(const Graph &g, const string &file, const set<int> &startSet, const set<int>&controlSet, /*const set<int>&artiSet,*/ map<pair<int,int>, int> &compEdges, int V){
 	  ofstream f(file.c_str(),ios::out);
 		f << "graph G{ " << '\n';
 		for(int i=0;i<V;i++){
 			f << i;
 			//if(solutSet.find(i)!=solutSet.end()) f << "[color=\".7 .3 1.0\"]" << "[style=filled]";//os vertices da solucao serao coloridos
-      if(artiSet.find(i)!=artiSet.end()) f << "[label = \"" << i <<"*\"]";//as articulacoes terao asterisco
+      //if(artiSet.find(i)!=artiSet.end()) f << "[label = \"" << i <<"*\"]";//as articulacoes terao asterisco
       if(startSet.find(i)!=startSet.end()) f << "[shape=triangle]";//starting points terao forma de triangulo
       else if(controlSet.find(i)!=controlSet.end()) f << "[shape=box]";//controllers terao forma de quadrilatero
       f << ";" << '\n';
     }
     pair<edge_iterator, edge_iterator> ei;
-    for(ei = boost::edges(g); ei.first != ei.second; ++ei.first)
-		  f << source(*ei.first, g) << " -- " << target(*ei.first, g) << ";\n";
+    for(ei = boost::edges(g); ei.first != ei.second; ++ei.first){
+		  f << source(*ei.first, g) << " -- " << target(*ei.first, g) << "[label = \"" << compEdges[make_pair(source(*ei.first, g), target(*ei.first, g))] << "\"];\n";
+
+		}
 	f << "}" <<endl;
 	f.close();
 }
@@ -72,10 +83,14 @@ int main(int argc, char **argv){
 
 	geraGrafo(g, v, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), startSet, controlSet);
 
-	vector<vertex> artiVec;
-	set<int> artiSet;
-	boost::articulation_points(g, back_inserter(artiVec)); for(int i=0; i<artiVec.size(); i++) artiSet.insert((int)artiVec[i]);
-	//addAux(g,startSet,controlSet);
+	addAux(g,startSet,controlSet);
+	map<pair<int,int>,int> compEdges;
+	boost::property_map<Graph, edge_component_t>::type component = get(edge_component, g);
+	boost::biconnected_components(g, component);
 
-  geraDot(g,"randomG.dot", startSet, controlSet, artiSet, v);
+//#pragma omp parallel for
+  for (pair<edge_iterator, edge_iterator> ei = boost::edges(g); ei.first != ei.second; ++ei.first){
+		compEdges.insert(make_pair(make_pair(source(*ei.first,g),target(*ei.first,g)),component[*ei.first]));
+	}
+  geraDot(g,"randomG.dot", startSet, controlSet, compEdges, v);
 }

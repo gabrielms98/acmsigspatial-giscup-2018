@@ -19,7 +19,6 @@ edge_component;
 
 typedef boost::adjacency_list<boost::listS,boost::vecS,boost::undirectedS,boost::no_property, boost::property <edge_component_t, std::size_t > > Graph;
 typedef boost::graph_traits<Graph>::vertex_descriptor vertex_d;
-typedef boost::graph_traits<Graph>::edge_descriptor edge_d;
 typedef boost::graph_traits<Graph>::edge_iterator edge_iterator;
 
 
@@ -133,8 +132,8 @@ int main(int argc, char **argv){
 	set<int>eSol;
 
 	leGrafo(g,argv[1],argv[2],startSet,controlSet,vDictIn,eDictIn,vDictOut,eDictOut,V,E);
-	//vector<pair<int,int> >auxEdges;
-	//addAux(g,startSet,controlSet,auxEdges);
+	vector<pair<int,int> >auxEdges;
+	addAux(g,startSet,controlSet,auxEdges);
   //vector<vertex_d> artiVec;
   //set<int> artiSet;
   //boost::articulation_points(g, back_inserter(artiVec)); for(int i=0; i<artiVec.size(); i++) artiSet.insert((int)artiVec[i]);
