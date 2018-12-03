@@ -34,7 +34,7 @@ void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startV
   assert(doc.HasMember("rows"));
 
   auto &rows = doc["rows"];
-  // assert(rows.IsArray());
+  assert(rows.IsArray());
 
   for(auto &obj : rows.GetArray()){
     assert(obj.IsObject());
@@ -90,7 +90,6 @@ void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startV
     else{//se o starting point for um vertice
       startVec[vDictIN[st]] = true;
     }
-    if(startingpoints.eof())break;
   }
 }
 
@@ -142,6 +141,7 @@ int main(int argc, char **argv){
   vector<int>cc(V);//armazena, no indice de cada vetor, o componente conexo ao qual ele pertence
   set<int> ccNums;//armazena o numero dos componentes conexos
   boost::connected_components(g, &cc[0]);//funcao que armazena em cc o numero do componente conexo de cada vertice
+  #pragma omp parallel for
   for(int i=0; i<V; i++)//armazena todos os numeros de componentes conexos em ccNums
     ccNums.insert(cc[i]);
 
