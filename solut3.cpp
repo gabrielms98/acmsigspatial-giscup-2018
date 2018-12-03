@@ -48,9 +48,9 @@ void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startV
     edgesMapIN.insert(make_pair(e, make_pair(vDictIN[u], vDictIN[v])));//inserimos a aresta no dicionario de entrada
     edgesMapOUT.insert(make_pair(make_pair(vDictIN[u], vDictIN[v]), e));//inserimos a aresta no dicionario de saida
 
-    controlVec = vector<bool>(V,false);//vector que informara quais
-    startVec = vector<bool>(V,false);
   }
+  controlVec = vector<bool>(V,false);//vector que informara quais
+  startVec = vector<bool>(V,false);
 
   for(Json::Value val : obj["controllers"]){//para cada controlador
     string c = val["globalId"].asString();
