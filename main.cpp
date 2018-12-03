@@ -112,7 +112,7 @@ int main(int argc, char **argv){
   multimap<string, int> eDictIN;//dicionario que ira converter o nome de cada aresta para seu indice
   multimap<string, pair<int,int> > edgesMapIN;//dicionario que ira converter o nome de cada aresta para um pair com seus vertices
   map<pair<int,int>, string> edgesMapOUT;//dicionario que ira converter os vertices da aresta para seu nome
-
+  ofstream out("output.txt");
 	int V=0;//representara o indice de cada vertice
   int E=0;//representara o indice de cada aresta
   vector<bool>controlVec;//vector que indica quais vertices sao controladores
@@ -146,9 +146,9 @@ int main(int argc, char **argv){
     if(solComps.find(component[*ei.first])!=solComps.end()){//se ela pertencer a algum dos componentes biconectados da solucao:
       int u = source(*ei.first,g);
       int v = target(*ei.first,g);
-      if(!vDictOUT[u].empty()) cout << vDictOUT[u] << '\n';//:
-      if(!vDictOUT[v].empty()) cout << vDictOUT[v] << '\n';//imprima o nome de seus dois vertices
-      if(!edgesMapOUT[make_pair(u,v)].empty()) cout << edgesMapOUT[make_pair(u,v)] << '\n';//imprima seu proprio nome
+      if(!vDictOUT[u].empty()) out << vDictOUT[u] << '\n';//:
+      if(!vDictOUT[v].empty()) out << vDictOUT[v] << '\n';//imprima o nome de seus dois vertices
+      if(!edgesMapOUT[make_pair(u,v)].empty()) out << edgesMapOUT[make_pair(u,v)] << '\n';//imprima seu proprio nome
     }
   }
   return 0;
