@@ -2,13 +2,14 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
-#include <jsoncpp/json/json.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/biconnected_components.hpp>
 #include <boost/graph/connected_components.hpp>
 #include "boost/graph/graph_traits.hpp"
 #include <string>
 #include <omp.h>
+#include "include/rapidjson/document.h"
+#include "Timer.cpp"
 
 using namespace std;
 
@@ -19,20 +20,32 @@ struct edge_component_t{//struct necessaria para o funcionamento da funcao bicon
 }
 edge_component;
 
-typedef boost::adjacency_list<boost::listS,boost::vecS,boost::undirectedS,boost::no_property, boost::property <edge_component_t, std::size_t > > Graph;//lista de adjacencia representando o grafo do problema
+typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,boost::no_property, boost::property <edge_component_t, std::size_t > > Graph;//lista de adjacencia representando o grafo do problema
 typedef boost::graph_traits<Graph>::edge_iterator edge_iterator;//iterador que ira iterar sobre as arestas
+typedef boost::graph_traits<Graph>::vertex_descriptor vertex_descriptor;//funciona como um ponteiro para vertices do grafo
+typedef boost::graph_traits<Graph>::edge_descriptor edge_descriptor;//funciona como um ponteiro para arestas do grafo
 
 void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startVec, vector<bool>&controlVec, map<string, int> &vDictIN, map<int, string> &vDictOUT, multimap<string, int> &eDictIN, multimap<string, pair<int,int> > &edgesMapIN, map<pair<int,int>, string> &edgesMapOUT, int &V, int &E){
+  Timer leGrafo("leGrafo");
+  rapidjson::Document doc;
+  doc.Parse(js.c_str());
 
-	ifstream ifs(js);//arquivo json
-  Json::Reader reader;
-  Json::Value obj;
-  reader.parse(ifs, obj);
+  assert(doc.IsObject());
+  assert(doc.HasMember("rows"));
 
-  for(Json::Value val : obj["rows"]){//para cada row do json
-    string u = val["fromGlobalId"].asString();//vertice de partida
-    string v = val["toGlobalId"].asString();//vertice de chegada
-		string e = val["viaGlobalId"].asString();//via
+  auto &rows = doc["rows"];
+  // assert(rows.IsArray());
+
+  for(auto &obj : rows.GetArray()){
+    assert(obj.IsObject());
+
+    assert(obj["toGlobalId"].IsString());
+    assert(obj["fromGlobalId"].IsString());
+    assert(obj["viaGlobalId"].IsString());
+
+    string u = obj["fromGlobalId"].GetString();//vertice de partida
+    string v = obj["toGlobalId"].GetString();//vertice de chegada
+		string e = obj["viaGlobalId"].GetString();//via
 
     if(vDictIN.insert(make_pair(u,V)).second){//para o vertice from, se ele ainda nao tiver sido inserido:
       boost::add_vertex(g);
@@ -53,8 +66,11 @@ void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startV
   controlVec = vector<bool>(V,false);//vector que informara' quais vertices sao controladores
   startVec = vector<bool>(V,false);//vector que informara' quais vertices sao starting points
 
-  for(Json::Value val : obj["controllers"]){//para cada controlador
-    string c = val["globalId"].asString();
+  assert(doc.HasMember("controllers"));
+  auto &control = doc["controllers"];
+  assert(control.IsArray());
+  for(auto &val : control.GetArray()){
+    string c = val["globalId"].GetString();
     controlVec[vDictIN[c]] = true;//setamos o controlvec na posicao daquele vertice para true
     vDictOUT[vDictIN[c]]=c;//inserimos seu nome no dicionario de saida
   }
@@ -78,11 +94,11 @@ void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startV
   }
 }
 
-void addAux(Graph &g, const vector<bool> &startVec, const vector<bool> &controlVec, const vector<int> &cc, int numCC, set<pair<int,int> > &auxEdges, int &V){
+void addAux(Graph &g, const vector<bool> &startVec, const vector<bool> &controlVec, const vector<int> &cc, int numCC, set<edge_descriptor> &auxEdges, int &V){
   boost::add_vertex(g);//criamos um vertice que sera ligado a todos os starting points
   int s = V++;//pegamos o indice dele e incrementamos a variavel de indice
   bool entrouS=false;//indica se teve pelo menos um starting point
-  // #pragma omp parallel for
+  #pragma omp parallel for
   for(int i=0; i<V-1; i++)//para cada vertice do CC (tirando o que acabou de ser criado (por isso o "-1") ), se ele for starting point, conecte-o ao vertice que acabou de ser criado (s)
     if(startVec[i]&&cc[i]==numCC){//se o vertice for starting point e for do componente conexo passado como argumento, crie a aresta.
       entrouS=true;
@@ -92,7 +108,7 @@ void addAux(Graph &g, const vector<bool> &startVec, const vector<bool> &controlV
   boost::add_vertex(g);//criamos um vertice que sera ligado a todos os starting points
   int c = V++;//pegamos o indice dele e incrementamos a variavel de indice
   bool entrouC=false;//indica se teve pelo menos um controlador
-  // #pragma omp parallel for
+  #pragma omp parallel for
   for(int i=0; i<V-2; i++)//para cada vertice do grafo(tirando os que acabaramde ser criados (por isso o "-2") ), se ele for controller, conecte-o ao vertice que acabou de ser criado (c)
     if(controlVec[i]&&cc[i]==numCC){//se o vertice for controller e for do componente conexo passado como argumento, crie a aresta.
       entrouC=true;
@@ -101,11 +117,15 @@ void addAux(Graph &g, const vector<bool> &startVec, const vector<bool> &controlV
 
   if(entrouS&&entrouC){//se tiver encontrado pelo menos um starting point e um controller
     add_edge(s, c, g);//conecte os dois vertices auxiliares s e c.
-    auxEdges.insert(make_pair(s,c));//insira a aresta no container de arestas auxiliares
+    pair<edge_descriptor, bool> auxPair = edge(vertex_descriptor(s), vertex_descriptor(c), g);//o first de auxPair ira armazenar um edge descriptor para a aresta, e isso sera armazenado no set de descriptors das arestas auxiliares
+    auxEdges.insert(auxPair.first);//insira tal descriptor no container de arestas auxiliares
   }
 }
 
 int main(int argc, char **argv){
+  string str;
+  getline(cin,str,(char)-1);
+
   Graph g;
   map<string, int> vDictIN;//dicionario que ira converter o nome de cada vertice para seu indice
   map<int, string> vDictOUT;//dicionario que ira converter o indice de cada vertice para seu nome
@@ -118,14 +138,14 @@ int main(int argc, char **argv){
   vector<bool>controlVec;//vector que indica quais vertices sao controladores
 	vector<bool>startVec;//vector que indica quais vertices sao starting points
 
-  leGrafo(g,argv[1],argv[2],startVec,controlVec,vDictIN,vDictOUT,eDictIN,edgesMapIN,edgesMapOUT,V,E);
+  leGrafo(g,str,argv[1],startVec,controlVec,vDictIN,vDictOUT,eDictIN,edgesMapIN,edgesMapOUT,V,E);
   vector<int>cc(V);//armazena, no indice de cada vetor, o componente conexo ao qual ele pertence
   set<int> ccNums;//armazena o numero dos componentes conexos
   boost::connected_components(g, &cc[0]);//funcao que armazena em cc o numero do componente conexo de cada vertice
   for(int i=0; i<V; i++)//armazena todos os numeros de componentes conexos em ccNums
     ccNums.insert(cc[i]);
 
-  set<pair<int,int> > auxEdges;//armazenara todas as arestas que forem auxiliares
+  set<edge_descriptor> auxEdges;//armazenara o edge descriptor de todas as arestas que forem auxiliares
   for(set<int>::iterator it = ccNums.begin(); it!=ccNums.end(); it++)//para cada componente conexo:
     addAux(g,startVec,controlVec,cc,(*it),auxEdges,V);//crie a aresta auxiliar nele
 
@@ -133,13 +153,8 @@ int main(int argc, char **argv){
   boost::biconnected_components(g, component);//armazena em component o numero do componente biconectado de cada aresta
 
   set<int> solComps;//armazena o numero dos componentes biconectados que fazem parte da solucao
-  for(pair<edge_iterator, edge_iterator> ei = boost::edges(g); ei.first != ei.second; ++ei.first){//para cada aresta, verifique se ela e' auxiliar. caso seja, insira o numero de seu componente biconectado em solComps
-    //ps: nao podemos iterar apenas sobre auxEdges pois 'component', criado com a boost, requer um iterador para arestas, e nao apenas os vertices 'u' e 'v'
-    int u = source(*ei.first,g);//pega o indice do vertice do qual a aresta sai
-    int v = target(*ei.first,g);//pega o indice do vertice para o qual a aresta vai
-    if(auxEdges.find(make_pair(u,v))!=auxEdges.end()){//se a aresta for auxiliar:
-      solComps.insert(component[*ei.first]);//adicione seu componente biconectado 'a solucao
-    }
+  for(set<edge_descriptor>::iterator ei = auxEdges.begin(); ei != auxEdges.end(); ++ei){//para cada aresta auxiliar, insira o numero de seu componente biconectado em solComps
+    solComps.insert(component[(*ei)]);//adicione seu componente biconectado 'a solucao
   }
 
   for(pair<edge_iterator, edge_iterator> ei = boost::edges(g); ei.first != ei.second; ++ei.first){//para cada aresta do grafo

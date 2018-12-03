@@ -2,13 +2,14 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
-#include <jsoncpp/json/json.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/biconnected_components.hpp>
 #include <boost/graph/connected_components.hpp>
 #include "boost/graph/graph_traits.hpp"
 #include <string>
 #include <omp.h>
+#include "include/rapidjson/document.h"
+#include "Timer.cpp"
 
 using namespace std;
 
@@ -24,15 +25,25 @@ typedef boost::graph_traits<Graph>::edge_iterator edge_iterator;//iterador que i
 
 void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startVec, vector<bool>&controlVec, map<string, int> &vDictIN, map<int, string> &vDictOUT, multimap<string, int> &eDictIN, multimap<string, pair<int,int> > &edgesMapIN, map<pair<int,int>, string> &edgesMapOUT, int &V, int &E){
 
-	ifstream ifs(js);//arquivo json
-  Json::Reader reader;
-  Json::Value obj;
-  reader.parse(ifs, obj);
+  rapidjson::Document doc;
+  doc.Parse(js.c_str());
 
-  for(Json::Value val : obj["rows"]){//para cada row do json
-    string u = val["fromGlobalId"].asString();//vertice de partida
-    string v = val["toGlobalId"].asString();//vertice de chegada
-		string e = val["viaGlobalId"].asString();//via
+  // assert(doc.IsObject());
+  // assert(doc.HasMember("rows"));
+
+  auto &rows = doc["rows"];
+  // assert(rows.IsArray());
+
+  for(auto &obj : rows.GetArray()){
+    // assert(obj.IsObject());
+
+    // assert(obj["toGlobalId"].IsString());
+    // assert(obj["fromGlobalId"].IsString());
+    // assert(obj["viaGlobalId"].IsString());
+
+    string u = obj["fromGlobalId"].GetString();//vertice de partida
+    string v = obj["toGlobalId"].GetString();//vertice de chegada
+		string e = obj["viaGlobalId"].GetString();//via
 
     if(vDictIN.insert(make_pair(u,V)).second){//para o vertice from, se ele ainda nao tiver sido inserido:
       boost::add_vertex(g);
@@ -53,8 +64,11 @@ void leGrafo(Graph &g, const string &js, const string &txt, vector<bool> &startV
   controlVec = vector<bool>(V,false);//vector que informara' quais vertices sao controladores
   startVec = vector<bool>(V,false);//vector que informara' quais vertices sao starting points
 
-  for(Json::Value val : obj["controllers"]){//para cada controlador
-    string c = val["globalId"].asString();
+  // assert(doc.HasMember("controllers"));
+  auto &control = doc["controllers"];
+  // assert(control.IsArray());
+  for(auto &val : control.GetArray()){
+    string c = val["globalId"].GetString();
     controlVec[vDictIN[c]] = true;//setamos o controlvec na posicao daquele vertice para true
     vDictOUT[vDictIN[c]]=c;//inserimos seu nome no dicionario de saida
   }
@@ -106,6 +120,9 @@ void addAux(Graph &g, const vector<bool> &startVec, const vector<bool> &controlV
 }
 
 int main(int argc, char **argv){
+  string str;
+  getline(cin,str,(char)-1);
+
   Graph g;
   map<string, int> vDictIN;//dicionario que ira converter o nome de cada vertice para seu indice
   map<int, string> vDictOUT;//dicionario que ira converter o indice de cada vertice para seu nome
@@ -117,8 +134,7 @@ int main(int argc, char **argv){
   int E=0;//representara o indice de cada aresta
   vector<bool>controlVec;//vector que indica quais vertices sao controladores
 	vector<bool>startVec;//vector que indica quais vertices sao starting points
-
-  leGrafo(g,argv[1],argv[2],startVec,controlVec,vDictIN,vDictOUT,eDictIN,edgesMapIN,edgesMapOUT,V,E);
+  leGrafo(g,str,argv[1],startVec,controlVec,vDictIN,vDictOUT,eDictIN,edgesMapIN,edgesMapOUT,V,E);
   vector<int>cc(V);//armazena, no indice de cada vetor, o componente conexo ao qual ele pertence
   set<int> ccNums;//armazena o numero dos componentes conexos
   boost::connected_components(g, &cc[0]);//funcao que armazena em cc o numero do componente conexo de cada vertice
