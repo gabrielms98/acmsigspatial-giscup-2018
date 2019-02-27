@@ -8,7 +8,7 @@
 #include "boost/graph/graph_traits.hpp"
 #include <boost/foreach.hpp>
 #include <string>
-#include <omp.h>
+// #include <omp.h>
 #include "include/rapidjson/document.h"
 
 using namespace std;
@@ -111,7 +111,7 @@ void addAux(Graph &g, const vector<bool> &startVec, const vector<bool> &controlV
   boost::add_vertex(g);//criamos um vertice que sera ligado a todos os starting points
   int s = V++;//pegamos o indice dele e incrementamos a variavel de indice
   bool entrouS=false;//indica se teve pelo menos um starting point
-  #pragma omp parallel for//utilizado para otimizacao
+  // #pragma omp parallel for//utilizado para otimizacao
   for(int i=0; i<V-1; i++)//para cada vertice do CC (tirando o que acabou de ser criado (por isso o "-1") ), se ele for starting point, conecte-o ao vertice que acabou de ser criado (s)
     if(startVec[i]&&cc[i]==numCC){//se o vertice for starting point e for do componente conexo passado como argumento, crie a aresta.
       entrouS=true;
@@ -121,7 +121,7 @@ void addAux(Graph &g, const vector<bool> &startVec, const vector<bool> &controlV
   boost::add_vertex(g);//criamos um vertice que sera ligado a todos os starting points
   int c = V++;//pegamos o indice dele e incrementamos a variavel de indice
   bool entrouC=false;//indica se teve pelo menos um controlador
-  #pragma omp parallel for//otimizacao
+  // #pragma omp parallel for//otimizacao
   for(int i=0; i<V-2; i++)//para cada vertice do grafo(tirando os que acabaramde ser criados (por isso o "-2") ), se ele for controller, conecte-o ao vertice que acabou de ser criado (c)
     if(controlVec[i]&&cc[i]==numCC){//se o vertice for controller e for do componente conexo passado como argumento, crie a aresta.
       entrouC=true;
